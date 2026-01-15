@@ -1,13 +1,11 @@
-const registerUser = (req, res) => {
+export const registerUser = (req, res) => {
   res.json({ message: "register" });
 };
 
-const loginUser = (req, res) => {
+export const loginUser = (req, res) => {
   res.json({ message: "login" });
 };
 
-const getUser = (req, res) => {
+export const getUser = (req, res) => {
   res.json({ message: "user" });
 };
-
-export default { registerUser, loginUser, getUser };

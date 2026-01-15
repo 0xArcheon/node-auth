@@ -8,7 +8,7 @@ import {
 const route = express.Router();
 
 route.get("/login", loginUser);
-route.post("/", registerUser);
-route.get("/getUser", getUser);
+route.post("/register", registerUser);
+route.get("/me", getUser);
 
 export default route;
