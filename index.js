@@ -1,11 +1,11 @@
 import express from "express";
 import connectDB from "./config/db.js";
-
-connectDB();
+import route from "./routes/userRoutes.js";
 
 const PORT = 3000;
 const app = express();
 app.use(express.json());
+// connectDB();
 
 app.get((req, res) => {
   res.json({ message: "hello from server" });
