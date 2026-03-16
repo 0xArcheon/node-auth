@@ -17,8 +17,6 @@ const userSchema = mongoose.Schema({
     type: String,
     reruired: [true, "Password is required"],
   },
-
-  timestamps: true,
 });
 
 export default userSchema;
