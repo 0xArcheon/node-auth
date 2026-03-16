@@ -15,6 +15,6 @@ export const auth = (req, res, next) => {
 
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalid access token" });
+    return res.status(401).json({ message: "Invalid access token", error });
   }
 };
