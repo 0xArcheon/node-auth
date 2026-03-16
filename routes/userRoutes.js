@@ -4,11 +4,12 @@ import {
   registerUser,
   getUser,
 } from "../controllers/userController.js";
+import { auth } from "../middleware/auth.js";
 
 const route = express.Router();
 
 route.get("/login", loginUser);
 route.post("/register", registerUser);
-route.get("/me", getUser);
+route.get("/me", auth, getUser);
 
 export default route;

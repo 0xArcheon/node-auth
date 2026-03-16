@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
+import { generateToken } from "../utils/generateToken.js";
 
 export const registerUser = async (req, res) => {
   try {
@@ -63,7 +64,10 @@ export const loginUser = async (req, res) => {
     );
 
     if (isCorrectPassword) {
-      return res.status(200).json({ message: "Login successfull" });
+      const token = generateToken(existingUser.username);
+      return res
+        .status(200)
+        .json({ message: "Login successfull", token: token });
     } else {
       return res.status(401).json({ message: "Invalid username or password" });
     }
