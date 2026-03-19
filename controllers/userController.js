@@ -1,6 +1,10 @@
 import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
-import { generateAccessToken } from "../utils/generateToken.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../utils/generateToken.js";
+import jwt from "jsonwebtoken";
 
 export const registerUser = async (req, res) => {
   try {
@@ -65,9 +69,16 @@ export const loginUser = async (req, res) => {
 
     if (isCorrectPassword) {
       const token = generateAccessToken(existingUser._id);
-      return res
-        .status(200)
-        .json({ message: "Login successfull", accessToken: token });
+      const refreshToken = generateRefreshToken(existingUser._id);
+
+      existingUser.refreshToken = refreshToken;
+      await existingUser.save();
+
+      return res.status(200).json({
+        message: "Login successfull",
+        accessToken: token,
+        refreshToken: refreshToken,
+      });
     } else {
       return res.status(401).json({ message: "Invalid username or password" });
     }
@@ -88,4 +99,36 @@ export const getUser = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+export const refreshToken = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: "No refresh token provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const user = await User.findById(decoded.id);
+
+    var newAccessToken;
+    if (!user || refreshToken == user.refreshToken) {
+      newAccessToken = generateAccessToken(user._id);
+      return res.status(200).json({ accessToken: newAccessToken });
+    }
+
+    return res.status(401).json({ message: "Invalid access token" });
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid access token ", error });
+  }
+};
+
+export const logout = async (req, res) => {
+  const user = User.findById(req.user.id);
+
+  user.refreshToken = null;
+  await user.save();
+
+  return res.json({ message: "Logged out successfully!" });
 };
