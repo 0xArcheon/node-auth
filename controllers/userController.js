@@ -74,10 +74,15 @@ export const loginUser = async (req, res) => {
       existingUser.refreshToken = refreshToken;
       await existingUser.save();
 
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
+
       return res.status(200).json({
         message: "Login successfull",
         accessToken: token,
-        refreshToken: refreshToken,
       });
     } else {
       return res.status(401).json({ message: "Invalid username or password" });
@@ -90,7 +95,9 @@ export const loginUser = async (req, res) => {
 export const getUser = async (req, res, next) => {
   try {
     const { username } = req.body;
-    const result = await User.find({ username }).select("-password");
+    const result = await User.find({ username })
+      .select("-password")
+      .select("-_id");
     res.status(200).json({
       success: true,
       count: result.length,
@@ -102,7 +109,7 @@ export const getUser = async (req, res, next) => {
 };
 
 export const refreshToken = async (req, res) => {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies?.refreshToken;
 
   if (!refreshToken) {
     return res.status(401).json({ message: "No refresh token provided" });
@@ -113,7 +120,7 @@ export const refreshToken = async (req, res) => {
     const user = await User.findById(decoded.id);
 
     var newAccessToken;
-    if (!user || refreshToken == user.refreshToken) {
+    if (user || refreshToken == user.refreshToken) {
       newAccessToken = generateAccessToken(user._id);
       return res.status(200).json({ accessToken: newAccessToken });
     }
@@ -125,10 +132,12 @@ export const refreshToken = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
-  const user = User.findById(req.user.id);
+  const user = await User.findById(req.user.id);
 
   user.refreshToken = null;
   await user.save();
+
+  res.clearCookie("refreshToken");
 
   return res.json({ message: "Logged out successfully!" });
 };

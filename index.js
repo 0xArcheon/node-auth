@@ -1,10 +1,22 @@
 import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
 import route from "./routes/userRoutes.js";
 
-const PORT = 3000;
+const PORT = 5000;
 const app = express();
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:3000";
+
+app.use(
+  cors({
+    origin: FRONTEND_ORIGIN,
+    credentials: true,
+  }),
+);
+
 app.use(express.json());
+app.use(cookieParser());
 connectDB();
 
 app.get("/", (req, res) => {
